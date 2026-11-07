@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRADE WALA</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1220;color:#eef3fc;font-family:Arial,sans-serif}
+header{padding:20px;background:#111c2e;border-bottom:1px solid #26344a}
+.brand{font-size:25px;font-weight:800;letter-spacing:1px}
+.brand span{color:#25d6a0}
+.tag{color:#25d6a0;font-size:11px;letter-spacing:2px;margin-top:5px}
+main{padding:16px;max-width:650px;margin:auto}
+.card{background:#142137;border:1px solid #263750;border-radius:15px;padding:17px;margin-bottom:15px}
+.muted{color:#8fa1ba;font-size:12px}
+.balance{font-size:30px;font-weight:bold;margin:10px 0;color:#25d6a0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tabs{display:flex;gap:8px;overflow:auto;margin:15px 0}
+.tabs button{white-space:nowrap}
+button{border:0;border-radius:9px;padding:12px 15px;font-weight:bold;cursor:pointer}
+.tab{background:#1d2b41;color:#cbd5e1}
+.tab.active{background:#25d6a0;color:#07150f}
+.buy{background:#16b981;color:#07150f}
+.sell{background:#ef5350;color:white}
+input,select{width:100%;padding:13px;margin:7px 0 13px;background:#0c1728;color:white;border:1px solid #34445c;border-radius:8px}
+label{font-size:12px;color:#9eb0c8}
+.stock{padding:14px 0;border-bottom:1px solid #293951}
+.stock:last-child{border:0}
+.price{font-weight:bold}
+.green{color:#25d6a0}
+.red{color:#ff7373}
+.full{width:100%}
+.hidden{display:none}
+h3{margin:0 0 14px}
+nav{position:sticky;bottom:0;background:#111c2e;display:flex;justify-content:space-around;padding:12px 3px;border-top:1px solid #263750}
+nav button{background:none;color:#9eb0c8;padding:9px 7px;font-size:12px}
+nav button.active{color:#25d6a0}
+.notice{font-size:11px;color:#9eb0c8;text-align:center;padding:12px}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">TRADE <span>WALA</span></div>
+ <div class="tag">TRADE & GROW</div>
+</header>
+
+<main>
+<section id="home">
+ <div class="card">
+  <div class="muted">BALANCE</div>
+  <div class="balance" id="balance">₹10,00,000</div>
+  <div class="row">
+   <div><div class="muted">Invested</div><b id="invested">₹0</b></div>
+   <div><div class="muted">P&L</div><b id="pnl">₹0</b></div>
+  </div>
+ </div>
+
+ <div class="tabs">
+  <button class="tab active" onclick="category('Index',this)">Index</button>
+  <button class="tab" onclick="category('Equity',this)">Equity</button>
+  <button class="tab" onclick="category('F&O',this)">F&O</button>
+  <button class="tab" onclick="category('Currency',this)">Currency</button>
+ </div>
+
+ <div class="card">
+  <div class="row"><h3>Market Watch</h3><span class="muted">DEMO PRICES</span></div>
+  <div id="market"></div>
+ </div>
+</section>
+
+<section id="trade" class="hidden">
+ <div class="card">
+  <h3>Place Virtual Order</h3>
+  <label>Instrument</label>
+  <select id="instrument"></select>
+  <label>Order Type</label>
+  <select id="orderType">
+   <option>Market</option><option>Limit</option>
+  </select>
+  <label>Transaction</label>
+  <select id="side">
+   <option value="BUY">BUY</option>
+   <option value="SELL">SELL</option>
+  </select>
+  <label>Quantity</label>
+  <input id="qty" type="number" min="1" value="1">
+  <label>Limit Price (optional)</label>
+  <input id="limit" type="number" placeholder="Enter limit price">
+  <label>Stop Loss (optional)</label>
+  <input id="sl" type="number" placeholder="Enter stop loss">
+  <label>Target (optional)</label>
+  <input id="target" type="number" placeholder="Enter target">
+  <button class="buy full" onclick="executeTrade()">PLACE VIRTUAL ORDER</button>
+  <p class="muted">Orders are simulated. No real exchange order is placed.</p>
+ </div>
+</section>
+
+<section id="portfolio" class="hidden">
+ <div class="card">
+  <h3>My Portfolio</h3>
+  <div id="positions">No open positions yet.</div>
+ </div>
+</section>
+
+<section id="orders" class="hidden">
+ <div class="card">
+  <h3>Order History</h3>
+  <div id="history">No orders yet.</div>
+ </div>
+</section>
+</main>
+
+<nav>
+ <button class="active" onclick="page('home',this)">⌂<br>Home</button>
+ <button onclick="page('trade',this)">⇄<br>Trade</button>
+ <button onclick="page('portfolio',this)">▣<br>Portfolio</button>
+ <button onclick="page('orders',this)">☷<br>Orders</button>
+</nav>
+<div class="notice">TRADE WALA • Personal Trading Practice</div>
+
+<script>
+const assets=[
+{name:"NIFTY 50",price:25800,cat:"Index"},
+{name:"BANKNIFTY",price:58200,cat:"Index"},
+{name:"FINNIFTY",price:27100,cat:"Index"},
+{name:"RELIANCE",price:1450,cat:"Equity"},
+{name:"HDFCBANK",price:980,cat:"Equity"},
+{name:"ICICIBANK",price:1350,cat:"Equity"},
+{name:"INFY",price:1580,cat:"Equity"},
+{name:"TCS",price:3100,cat:"Equity"},
+{name:"NIFTY 26000 CE",price:150,cat:"F&O"},
+{name:"NIFTY 26000 PE",price:145,cat:"F&O"},
+{name:"BANKNIFTY FUT",price:58200,cat:"F&O"},
+{name:"USDINR FUT",price:89,cat:"Currency"},
+{name:"EURINR FUT",price:103,cat:"Currency"}
+];
+
+let data=JSON.parse(localStorage.getItem("tradeWala")||"null")||
+{balance:1000000,positions:[],orders:[]};
+let currentCategory="Index";
+
+const money=n=>"₹"+Number(n).toLocaleString("en-IN",{maximumFractionDigits:2});
+const save=()=>localStorage.setItem("tradeWala",JSON.stringify(data));
+
+function render(){
+ document.getElementById("balance").textContent=money(data.balance);
+ let invested=data.positions.reduce((s,p)=>s+p.qty*p.avg,0);
+ let pnl=data.positions.reduce((s,p)=>s+(p.price-p.avg)*p.qty,0);
+ document.getElementById("invested").textContent=money(invested);
+ let el=document.getElementById("pnl");
+ el.textContent=(pnl>=0?"+":"")+money(pnl);
+ el.className=pnl>=0?"green":"red";
+ renderMarket();
+ renderPositions();
+ renderOrders();
+}
+
+function category(cat,btn){
+ currentCategory=cat;
+ document.querySelectorAll(".tabs .tab").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
+ renderMarket();
+}
+
+function renderMarket(){
+ document.getElementById("market").innerHTML=assets
+ .filter(a=>a.cat===currentCategory)
+ .map(a=>`<div class="stock row">
+ <div><b>${a.name}</b><div class="muted">${a.cat} · Demo price</div></div>
+ <div style="text-align:right"><div class="price">${money(a.price)}</div>
+ <button class="buy" onclick="openTrade('${a.name}','BUY')">BUY</button>
+ <button class="sell" onclick="openTrade('${a.name}','SELL')">SELL</button></div>
+ </div>`).join("");
+}
+
+function openTrade(name,side){
+ page("trade",document.querySelectorAll("nav button")[1]);
+ document.getElementById("instrument").value=name;
+ document.getElementById("side").value=side;
+}
+
+function executeTrade(){
+ let name=document.getElementById("instrument").value;
+ let side=document.getElementById("side").value;
+ let qty=Number(document.getElementById("qty").value);
+ let asset=assets.find(a=>a.name===name);
+ let limit=Number(document.getElementById("limit").value);
+ let price=limit>0&&document.getElementById("orderType").value==="Limit"?limit:asset.price;
+ let sl=Number(document.getElementById("sl").value)||0;
+ let target=Number(document.getElementById("target").value)||0;
+
+ if(!qty||qty<1){alert("Enter valid quantity");return;}
+ if(side==="BUY"){
+  if(data.balance<price*qty){alert("Insufficient balance");return;}
+  data.balance-=price*qty;
+  let p=data.positions.find(x=>x.name===name);
+  if(p){
+   p.avg=(p.avg*p.qty+price*qty)/(p.qty+qty);
+   p.qty+=qty;p.price=price;
+   if(sl)p.sl=sl;if(target)p.target=target;
+  }else data.positions.push({name,qty,avg:price,price,sl,target});
+ }else{
+  let p=data.positions.find(x=>x.name===name);
+  if(!p||p.qty<qty){alert("Not enough quantity to sell");return;}
+  data.balance+=price*qty;
+  p.qty-=qty;
+  if(p.qty===0)data.positions=data.positions.filter(x=>x.name!==name);
+ }
+ data.orders.unshift({name,side,qty,price,time:new Date().toLocaleString()});
+ save();render();
+ alert("Virtual "+side+" order executed!");
+ page("portfolio",document.querySelectorAll("nav button")[2]);
+}
+
+function renderPositions(){
+ let el=document.getElementById("positions");
+ if(!data.positions.length){el.textContent="No open positions yet.";return;}
+ el.innerHTML=data.positions.map(p=>`
+ <div class="stock">
+ <div class="row"><b>${p.name}</b><b>${money(p.qty*p.price)}</b></div>
+ <div class="muted">Qty: ${p.qty} · Average: ${money(p.avg)}</div>
+ <div class="${p.price>=p.avg?'green':'red'}">P&L: ${money((p.price-p.avg)*p.qty)}</div>
+ <div class="muted">SL: ${p.sl?money(p.sl):"Not set"} · Target: ${p.target?money(p.target):"Not set"}</div>
+ </div>`).join("");
+}
+
+function renderOrders(){
+ let el=document.getElementById("history");
+ if(!data.orders.length){el.textContent="No orders yet.";return;}
+ el.innerHTML=data.orders.map(o=>`
+ <div class="stock row"><div><b>${o.name}</b>
+ <div class="muted">${o.time}</div></div>
+ <div style="text-align:right"><b class="${o.side==="BUY"?"green":"red"}">${o.side}</b>
+ <div class="muted">${o.qty} × ${money(o.price)}</div></div></div>`).join("");
+}
+
+function page(id,btn){
+ ["home","trade","portfolio","orders"].forEach(x=>
+ document.getElementById(x).classList.toggle("hidden",x!==id));
+ document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+ if(btn)btn.classList.add("active");
+}
+
+document.getElementById("instrument").innerHTML=assets.map(a=>
+ `<option value="${a.name}">${a.name}</option>`).join("");
+
+render();
+</script>
+</body>
+</html>
